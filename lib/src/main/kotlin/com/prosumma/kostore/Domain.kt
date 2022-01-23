@@ -14,9 +14,9 @@ abstract class Domain(val name: Name, val parent: Domain? = null) {
     abstract val container: Container
 
     @Suppress("UNCHECKED_CAST")
-    fun <Child: Domain> getChild(name: Name, default: (Domain) -> Child): Child =
+    fun <Parent: Domain, Child: Domain> getChild(name: Name, default: (Parent) -> Child): Child =
         _children.getOrPut(name) {
-            val child = default(this)
+            val child = default(this as Parent)
             if (child.parent != this)
                 throw IllegalArgumentException("Mismatched parents.")
             if (child.name != name)
@@ -31,12 +31,12 @@ abstract class Domain(val name: Name, val parent: Domain? = null) {
         key.hashCode()
 }
 
-class ChildDelegate<P: Domain, D: Domain>(val name: Name, val create: (P) -> D) {
-    @Suppress("UNCHECKED_CAST")
+class ChildDelegate<P: Domain, D: Domain>(
+    private val name: Name,
+    private val create: (P) -> D
+) {
     operator fun getValue(parent: Domain, property: KProperty<*>): D =
-        parent.getChild(name) {
-            create(it as P)
-        }
+        parent.getChild(name, create)
 }
 
 fun <P: Domain, D: Domain> child(name: Name, create: (P) -> D): ChildDelegate<P, D> =
