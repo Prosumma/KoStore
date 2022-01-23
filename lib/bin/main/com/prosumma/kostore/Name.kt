@@ -3,7 +3,7 @@ package com.prosumma.kostore
 data class Name(internal val name: String) {
     init {
         if (name.contains('/'))
-            throw IllegalArgumentException("A name may include any character except slash (/).")
+            throw IllegalArgumentException("A name may include any character except slash (/) and empty whitespace.")
     }
 
     operator fun plus(name: Name): Key =

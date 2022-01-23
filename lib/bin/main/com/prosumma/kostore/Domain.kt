@@ -23,7 +23,14 @@ abstract class Domain(val name: Name, val parent: Domain? = null) {
 class ChildDelegate<P: Domain, D: Domain>(val name: Name, val create: (P) -> D) {
     @Suppress("UNCHECKED_CAST")
     operator fun getValue(parent: P, property: KProperty<*>): D =
-        parent._children.getOrPut(name) { create(parent) } as D
+        parent._children.getOrPut(name, validate(name, create)) as D
+
+    fun validate(name: Name, create: (P) -> D): (P) -> D = { parent ->
+        val domain = create(parent)
+        if (domain.name == name)
+            throw IllegalArgumentException("Mismatched names ($name and ${domain.name} for domain.")
+        return domain
+    }
 }
 
 fun <P: Domain, D: Domain> child(name: Name, create: (P) -> D): ChildDelegate<P, D> =

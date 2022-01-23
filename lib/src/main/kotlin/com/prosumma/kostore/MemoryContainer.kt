@@ -9,12 +9,12 @@ class MemoryContainer(internal val store: MutableMap<String, String> = mutableMa
     override fun contains(key: Key): Boolean =
         store.keys.contains(key.toString())
     override fun getJSON(key: Key): String? = store[key.toString()]
-    override fun setJSON(key: Key, value: String?) {
+    override fun setJSON(key: Key, json: String?) {
         val skey = key.toString()
-        if (value == null) {
+        if (json == null) {
             store.remove(skey)
         } else {
-            store[skey] = value
+            store[skey] = json
         }
     }
 }
