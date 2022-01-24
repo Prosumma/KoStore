@@ -7,8 +7,7 @@ class DomainTest {
     @Test
     fun testDomain() {
         val store = MemoryStore()
-        val container = StandardContainer(store)
-        val appDomain = AppDomain(container)
+        val appDomain = AppDomain(store)
         appDomain.watusi = "watusi"
         assertEquals(appDomain.watusi, "watusi")
         assertEquals(store.store["/watusi"], "\"watusi\"")
