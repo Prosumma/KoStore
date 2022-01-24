@@ -1,11 +1,9 @@
 package com.prosumma.kostore
 
-import kotlin.reflect.KProperty
-
 abstract class Domain(val name: Name, val parent: Domain? = null) {
     constructor(name: String, parent: Domain? = null): this(Name(name), parent)
 
-    internal val _children: MutableMap<Name, Domain> = mutableMapOf()
+    private val _children: MutableMap<Name, Domain> = mutableMapOf()
     val children: MutableMap<Name, Domain> get() = _children
 
     val key: Key
@@ -30,17 +28,3 @@ abstract class Domain(val name: Name, val parent: Domain? = null) {
     override fun hashCode(): Int =
         key.hashCode()
 }
-
-class ChildDelegate<P: Domain, D: Domain>(
-    private val name: Name,
-    private val create: (P) -> D
-) {
-    operator fun getValue(parent: Domain, property: KProperty<*>): D =
-        parent.getChild(name, create)
-}
-
-fun <P: Domain, D: Domain> child(name: Name, create: (P) -> D): ChildDelegate<P, D> =
-    ChildDelegate(name, create)
-
-fun <P: Domain, D: Domain> child(name: String, create: (P) -> D): ChildDelegate<P, D> =
-    ChildDelegate(Name(name), create)

@@ -21,8 +21,7 @@ inline fun <D: Domain, reified T> stored(name: Name?, noinline default: () -> T)
     StoredDelegate<D, T>
 {
     val getter: PropertyGetter<T> = { key, container ->
-        if (!container.contains(key)) container[key] = default()
-        container[key]
+        container[key, default]
     }
     val setter: PropertySetter<T> = { key, container, value ->
         container[key] = value

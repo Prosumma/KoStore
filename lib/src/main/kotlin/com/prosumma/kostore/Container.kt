@@ -1,18 +1,26 @@
 package com.prosumma.kostore
 
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 interface Container {
-    fun getJSON(key: Key): String?
-    fun setJSON(key: Key, json: String?)
-    fun contains(key: Key): Boolean =
-        getJSON(key) != null
+    fun <T> deserialize(key: Key, deserialize: (String) -> T): T?
+    fun <T> serialize(key: Key, value: T, serialize: (T) -> String)
+    fun contains(key: Key): Boolean
 }
 
-inline operator fun <reified T> Container.get(key: Key): T =
-    Json.decodeFromString(getJSON(key)!!)
+inline operator fun <reified T> Container.get(key: Key): T? =
+    deserialize(key, Json::decodeFromString)
+
+inline operator fun <reified T> Container.get(key: Key, noinline default: () -> T): T =
+    deserialize(key, Json::decodeFromString) ?: run {
+        synchronized(this) {
+            val value = default()
+            this[key] = value
+            value
+        }
+    }
 
 inline operator fun <reified T> Container.set(key: Key, value: T) =
-    setJSON(key, Json.encodeToString(value))
+    serialize(key, value, Json::encodeToString)
